@@ -7,7 +7,9 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
-import edu.wpi.first.math.geometry.Rotation2d; 
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
+import frc.robot.Constants.SwerveConstants; 
 
 public class SwerveMod { 
 
@@ -23,6 +25,7 @@ public class SwerveMod {
     private final CANCoder absoluteAngleEncoder;   
     private final Rotation2d encoderOffset;  
     private final boolean isTurnInverted = true; 
+    private final boolean absEncInverted = false; 
 
     public SwerveMod(int index){ 
         switch (index) { 
@@ -68,34 +71,61 @@ public class SwerveMod {
     turningEncoder.setInverted(isTurnInverted); 
 
     driveController = driveMotor.getPIDController(); 
-    turnController = turningMotor.getPIDController();  
+    turnController = turningMotor.getPIDController();   
 
-    driveController.setP(1.0); 
-    driveController.setI(0.0); 
-    driveController.setD(0.0);   
+    double[] drivePID = {1,0,0};  
 
-    driveController.setFeedbackDevice(driveEncoder); 
+    double[] turnPID = {1,0,0}; 
+
+    driveEncoder.setPositionConversionFactor((Math.PI * Units.inchesToMeters((SwerveConstants.wheelRad * 2)) / SwerveConstants.driveRatio)); 
     
-    turnController.setP(1.0); 
-    turnController.setI(0.0); 
-    turnController.setD(0.0);  
+    turningEncoder.setPositionConversionFactor(1 / SwerveConstants.turnRatio); 
 
-    turnController.setFeedbackDevice(turningEncoder);  
+    configControl(driveController,false,drivePID, driveEncoder); 
 
-    turnController.setPositionPIDWrappingEnabled(true); 
-    turnController.setPositionPIDWrappingMaxInput(360); 
-    turnController.setPositionPIDWrappingMinInput(0); 
+    configControl(turnController, true, turnPID, turningEncoder);  
 
-
+    
+ 
+    driveMotor.burnFlash(); 
+    turningMotor.burnFlash();
     
   }  
 
+
+  public void configControl(SparkMaxPIDController controller, boolean wrapping, double[] pid, RelativeEncoder feedback){ 
+    controller.setP(pid[0]); 
+    controller.setI(pid[1]); 
+    controller.setD(pid[2]);   
+    controller.setFeedbackDevice(feedback); 
+    if (wrapping){ 
+      controller.setPositionPIDWrappingEnabled(true); 
+      controller.setPositionPIDWrappingMaxInput(360); 
+      controller.setPositionPIDWrappingMinInput(0);
+    }
+
+  }
   public void setDriveVolts(double volts){ 
     driveMotor.setVoltage(volts);
+  }   
+   
+  public double getDriveMotPos(){ 
+    driveEncoder.getPosition();
   } 
 
   public void setTurnVolts(double volts){ 
     turningMotor.setVoltage(volts);
+  } 
+  
+  public double getTurnMotPos(){ 
+    turningEncoder.getPosition();
+  } 
+
+  public double absoluteAnglePos(){ 
+    double angle = absoluteAngleEncoder.getVoltage() / RobotController.getVoltage5V(); 
+    angle *= 2.0 * Math.PI 
+    angle -= encoderOffset.toRadians();  
+    return angle * (absEncInverted ? -1.0 : 1.0); 
   } 
 
   public void setDriveVelocity(double metersPerSecond){ 
@@ -104,7 +134,14 @@ public class SwerveMod {
  
   public void setDrivePosition(double position){ 
     driveController.setReference(position, com.revrobotics.CANSparkMax.ControlType.kPosition);
+  }  
+
+  public void resetEncoders(){ 
+    driverEncoder.setPosition(0); 
+    turnEncoder.setPosition(absoluteAnglePos());
   }
+
+  
       
 
 }

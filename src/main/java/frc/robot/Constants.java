@@ -15,5 +15,12 @@ package frc.robot;
 public final class Constants {
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
+  } 
+
+  public static class SwerveConstants { 
+    public static final double wheelRad = 3;  
+    public static final double driveRatio = (50.0 / 14.0) * (17.0 / 27.0) * (45.0 / 15.0); 
+    public static final double turnRatio = 150 / 70;
+
   }
 }
