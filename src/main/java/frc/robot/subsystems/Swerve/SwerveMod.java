@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.Swerve;
 
 import com.ctre.phoenix.sensors.CANCoder;
 import com.revrobotics.CANSparkMax;
@@ -8,7 +8,9 @@ import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.Constants.SwerveConstants; 
 
 public class SwerveMod { 
@@ -65,9 +67,8 @@ public class SwerveMod {
 
     turningEncoder.setInverted(isTurnInverted);  
 
-    driveEncoder.setPosition(0); 
+    resetEncoders(); 
 
-    turningEncoder.setPosition(0);  
     turningEncoder.setInverted(isTurnInverted); 
 
     driveController = driveMotor.getPIDController(); 
@@ -105,42 +106,72 @@ public class SwerveMod {
     }
 
   }
-  public void setDriveVolts(double volts){ 
-    driveMotor.setVoltage(volts);
+  public void setDrive(double speed){ 
+    driveMotor.set(speed); 
+    
   }   
    
   public double getDriveMotPos(){ 
-    driveEncoder.getPosition();
-  } 
+    return driveEncoder.getPosition();
+  }  
 
-  public void setTurnVolts(double volts){ 
-    turningMotor.setVoltage(volts);
+  public double getDriveVeloc(){ 
+    return driveEncoder.getVelocity();
+  }
+
+  public void setTurn(double speed){ 
+    turningMotor.set(speed);
   } 
   
   public double getTurnMotPos(){ 
-    turningEncoder.getPosition();
+    return turningEncoder.getPosition();
   } 
 
-  public double absoluteAnglePos(){ 
-    double angle = absoluteAngleEncoder.getVoltage() / RobotController.getVoltage5V(); 
-    angle *= 2.0 * Math.PI 
-    angle -= encoderOffset.toRadians();  
-    return angle * (absEncInverted ? -1.0 : 1.0); 
-  } 
+  private double absoluteAnglePos(){ 
+    double angle = absoluteAngleEncoder.getBusVoltage() / RobotController.getVoltage5V(); 
+    angle *= 2.0 * Math.PI;
+    angle -= encoderOffset.getRadians();  
+    return angle * (absEncInverted ? -1.0 : 1.0);
+  }  
 
+  
+  /* 
   public void setDriveVelocity(double metersPerSecond){ 
     driveController.setReference(metersPerSecond, com.revrobotics.CANSparkMax.ControlType.kVelocity);
   }
- 
+  */
   public void setDrivePosition(double position){ 
     driveController.setReference(position, com.revrobotics.CANSparkMax.ControlType.kPosition);
   }  
 
-  public void resetEncoders(){ 
-    driverEncoder.setPosition(0); 
-    turnEncoder.setPosition(absoluteAnglePos());
-  }
+  public void setTurnPosition(double position){ 
+    turnController.setReference(position, com.revrobotics.CANSparkMax.ControlType.kPosition);
+  }   
 
+  private void resetEncoders(){ 
+    driveEncoder.setPosition(0); 
+    turningEncoder.setPosition(absoluteAnglePos());
+  } 
+
+  private SwerveModuleState getState(){ 
+    return new SwerveModuleState(getDriveVeloc(), new Rotation2d(getTurnMotPos())); 
+  }
+  
+  public void setDesiredState(SwerveModuleState state){  
+    if (Math.abs(state.speedMetersPerSecond) < 0.0001){ 
+       stop(); 
+       return;
+    }
+    state = SwerveModuleState.optimize(state, getState().angle);   
+    setDrive(state.speedMetersPerSecond/SwerveConstants.maximumVelocity); 
+    setTurnPosition(state.angle.getRadians());
+
+  } 
+
+  public void stop() { 
+    driveMotor.set(0); 
+    turningMotor.set(0); 
+  }
   
       
 
