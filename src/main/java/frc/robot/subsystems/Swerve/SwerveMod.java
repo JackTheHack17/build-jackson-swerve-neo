@@ -10,7 +10,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.RobotController;
+//import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.Constants.SwerveConstants; 
 
 public class SwerveMod { 
@@ -128,7 +128,7 @@ public class SwerveMod {
   } 
 
   private double absoluteAnglePos(){ 
-    double angle = absoluteAngleEncoder.getBusVoltage() / RobotController.getVoltage5V(); 
+    double angle = absoluteAngleEncoder.getPosition();
     angle *= 2.0 * Math.PI;
     angle -= encoderOffset.getRadians();  
     return angle * (absEncInverted ? -1.0 : 1.0);

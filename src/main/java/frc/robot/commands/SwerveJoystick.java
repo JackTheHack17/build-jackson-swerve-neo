@@ -4,9 +4,11 @@ import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.SwerveConstants;
-import frc.robot.subsystems.Drive;
+import frc.robot.subsystems.Swerve.Drive;
+
 
 public class SwerveJoystick extends CommandBase { 
     private Drive swerveDrive; 
@@ -46,7 +48,7 @@ public class SwerveJoystick extends CommandBase {
           chassSpeeds = new ChassisSpeeds(xSpeed, ySpeed, turningSpeed); 
        } 
 
-       SwerveModuleState[] states = SwerveConstants.SwerveDriveKinematics.
-       
+       SwerveModuleState[] states = SwerveConstants.swerveKin.toSwerveModuleStates(chassSpeeds);
+       swerveDrive.setModuleStates(states);
     }
 }

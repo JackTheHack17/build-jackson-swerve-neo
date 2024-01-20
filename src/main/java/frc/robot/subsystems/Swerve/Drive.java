@@ -1,4 +1,7 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.Swerve; 
+
+
+import com.ctre.phoenix.sensors.Pigeon2;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 //import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -10,14 +13,14 @@ public class Drive extends SubsystemBase{
     private final SwerveMod frontRight = new SwerveMod(2); 
     private final SwerveMod backLeft = new SwerveMod(3); 
     private final SwerveMod backRight = new SwerveMod(4);  
-    private final GyroPigeon pigeon = new GyroPigeon();
+    private final Pigeon2 pigeon = new Pigeon2(4);
 
     public Drive(){ 
 
     } 
 
     public double getHeading(){ 
-        return Math.IEEEremainder(pigeon.getYaw(), getHeading());
+        return Math.IEEEremainder(pigeon.getYaw(), 360);
     } 
 
     public Rotation2d getRotation2d(){ 

@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
  * constants. This class should not be used for any other purpose. All constants should be declared
@@ -20,7 +23,18 @@ public final class Constants {
   public static class SwerveConstants { 
     public static final double wheelRad = 3;  
     public static final double driveRatio = (50.0 / 14.0) * (17.0 / 27.0) * (45.0 / 15.0); 
-    public static final double turnRatio = 150 / 70;
-
-  }
+    public static final double turnRatio = 150 / 70; 
+    public static final double maximumVelocity = 40;
+    public static final double maxLinearAccel = 30;
+    public static final double maxAngleAccel = 15; 
+    public static final double maximumTorque = 0; 
+    
+    public static final SwerveDriveKinematics swerveKin = new SwerveDriveKinematics( 
+      new Translation2d(Math.PI, -Math.PI), 
+      new Translation2d(Math.PI, Math.PI), 
+      new Translation2d(-Math.PI, -Math.PI), 
+      new Translation2d(-Math.PI, Math.PI)
+    );
+    
+  } 
 }
